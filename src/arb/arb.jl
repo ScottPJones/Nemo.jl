@@ -1631,7 +1631,7 @@ numpart(n::Int, r::ArbField) = numpart(fmpz(n), r)
 
 function zero!(z::arb)
    ccall((:arb_zero, :libarb), Void, (Ptr{arb},), &z)
-   nothing
+   return z
 end
 
 for (s,f) in (("add!","arb_add"), ("mul!","arb_mul"), ("div!", "arb_div"),
@@ -1640,7 +1640,7 @@ for (s,f) in (("add!","arb_add"), ("mul!","arb_mul"), ("div!", "arb_div"),
     function ($(Symbol(s)))(z::arb, x::arb, y::arb)
       ccall(($f, :libarb), Void, (Ptr{arb}, Ptr{arb}, Ptr{arb}, Int),
                            &z, &x, &y, parent(x).prec)
-      nothing
+      return z
     end
   end
 end
@@ -1648,7 +1648,7 @@ end
 function addeq!(z::arb, x::arb)
     ccall((:arb_add, :libarb), Void, (Ptr{arb}, Ptr{arb}, Ptr{arb}, Int),
                            &z, &z, &x, parent(x).prec)
-    nothing
+    return z
 end
 
 ################################################################################
@@ -1689,7 +1689,7 @@ for (typeofx, passtoc) in ((arb, Ref{arb}), (Ptr{arb}, Ptr{arb}))
     end
 
     function _arb_set(x::($typeofx), y::arb)
-      ccall((:arb_set, :libarb), Void, (($passtoc), Ptr{arb}, Int), x, &y)
+      ccall((:arb_set, :libarb), Void, (($passtoc), Ptr{arb}), x, &y)
     end
 
     function _arb_set(x::($typeofx), y::arb, p::Int)

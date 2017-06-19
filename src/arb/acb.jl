@@ -1370,32 +1370,37 @@ end
 
 function zero!(z::acb)
    ccall((:acb_zero, :libarb), Void, (Ptr{acb},), &z)
-   nothing
+   return z
 end
 
 function add!(z::acb, x::acb, y::acb)
   ccall((:acb_add, :libarb), Void, (Ptr{acb}, Ptr{acb}, Ptr{acb}, Int),
          &z, &x, &y, parent(z).prec)
+  return z
 end
 
 function addeq!(z::acb, y::acb)
   ccall((:acb_add, :libarb), Void, (Ptr{acb}, Ptr{acb}, Ptr{acb}, Int),
          &z, &z, &y, parent(z).prec)
+  return z
 end
 
 function sub!(z::acb, x::acb, y::acb)
   ccall((:acb_sub, :libarb), Void, (Ptr{acb}, Ptr{acb}, Ptr{acb}, Int),
         &z, &x, &y, parent(z).prec)
+  return z
 end
 
 function mul!(z::acb, x::acb, y::acb)
   ccall((:acb_mul, :libarb), Void, (Ptr{acb}, Ptr{acb}, Ptr{acb}, Int),
         &z, &x, &y, parent(z).prec)
+  return z
 end
 
 function div!(z::acb, x::acb, y::acb)
   ccall((:acb_div, :libarb), Void, (Ptr{acb}, Ptr{acb}, Ptr{acb}, Int),
         &z, &x, &y, parent(z).prec)
+  return z
 end
 
 ################################################################################
@@ -1446,7 +1451,7 @@ for (typeofx, passtoc) in ((acb, Ref{acb}), (Ptr{acb}, Ptr{acb}))
     end
 
     function _acb_set(x::($typeofx), y::acb)
-      ccall((:acb_set, :libarb), Void, (($passtoc), Ptr{acb}, Int), x, &y)
+      ccall((:acb_set, :libarb), Void, (($passtoc), Ptr{acb}), x, &y)
     end
 
     function _acb_set(x::($typeofx), y::acb, p::Int)

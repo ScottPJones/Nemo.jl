@@ -810,46 +810,46 @@ end
 
 function zero!(z::acb_poly)
    ccall((:acb_poly_zero, :libarb), Void, (Ptr{acb_poly},), &z)
-   nothing
+   return z
 end
 
 function fit!(z::acb_poly, n::Int)
    ccall((:acb_poly_fit_length, :libarb), Void, 
                     (Ptr{acb_poly}, Int), &z, n)
-   nothing
+   return nothing
 end
 
 function setcoeff!(z::acb_poly, n::Int, x::fmpz)
    ccall((:acb_poly_set_coeff_fmpz, :libarb), Void, 
                     (Ptr{acb_poly}, Int, Ptr{fmpz}), &z, n, &x)
-   nothing
+   return z
 end
 
 function setcoeff!(z::acb_poly, n::Int, x::acb)
    ccall((:acb_poly_set_coeff_acb, :libarb), Void, 
                     (Ptr{acb_poly}, Int, Ptr{acb}), &z, n, &x)
-   nothing
+   return z
 end
 
 function mul!(z::acb_poly, x::acb_poly, y::acb_poly)
    ccall((:acb_poly_mul, :libarb), Void, 
                 (Ptr{acb_poly}, Ptr{acb_poly}, Ptr{acb_poly}, Int),
                     &z, &x, &y, prec(parent(z)))
-   nothing
+   return z
 end
 
 function addeq!(z::acb_poly, x::acb_poly)
    ccall((:acb_poly_add, :libarb), Void, 
                 (Ptr{acb_poly}, Ptr{acb_poly}, Ptr{acb_poly}, Int),
                     &z, &z, &x, prec(parent(z)))
-   nothing
+   return z
 end
 
 function add!(z::acb_poly, x::acb_poly, y::acb_poly)
    ccall((:acb_poly_add, :libarb), Void, 
                 (Ptr{acb_poly}, Ptr{acb_poly}, Ptr{acb_poly}, Int),
                     &z, &x, &y, prec(parent(z)))
-   nothing
+   return z
 end
 
 ###############################################################################
@@ -858,27 +858,27 @@ end
 #
 ###############################################################################
 
-Base.promote_rule(::Type{acb_poly}, ::Type{Float64}) = acb_poly
+promote_rule(::Type{acb_poly}, ::Type{Float64}) = acb_poly
 
-Base.promote_rule(::Type{acb_poly}, ::Type{Complex{Float64}}) = acb_poly
+promote_rule(::Type{acb_poly}, ::Type{Complex{Float64}}) = acb_poly
 
-Base.promote_rule(::Type{acb_poly}, ::Type{Int}) = acb_poly
+promote_rule(::Type{acb_poly}, ::Type{Int}) = acb_poly
 
-Base.promote_rule(::Type{acb_poly}, ::Type{Complex{Int}}) = acb_poly
+promote_rule(::Type{acb_poly}, ::Type{Complex{Int}}) = acb_poly
 
-Base.promote_rule(::Type{acb_poly}, ::Type{fmpz}) = acb_poly
+promote_rule(::Type{acb_poly}, ::Type{fmpz}) = acb_poly
 
-Base.promote_rule(::Type{acb_poly}, ::Type{fmpq}) = acb_poly
+promote_rule(::Type{acb_poly}, ::Type{fmpq}) = acb_poly
 
-Base.promote_rule(::Type{acb_poly}, ::Type{arb}) = acb_poly
+promote_rule(::Type{acb_poly}, ::Type{arb}) = acb_poly
 
-Base.promote_rule(::Type{acb_poly}, ::Type{acb}) = acb_poly
+promote_rule(::Type{acb_poly}, ::Type{acb}) = acb_poly
 
-Base.promote_rule(::Type{acb_poly}, ::Type{fmpz_poly}) = acb_poly
+promote_rule(::Type{acb_poly}, ::Type{fmpz_poly}) = acb_poly
 
-Base.promote_rule(::Type{acb_poly}, ::Type{fmpq_poly}) = acb_poly
+promote_rule(::Type{acb_poly}, ::Type{fmpq_poly}) = acb_poly
 
-Base.promote_rule(::Type{acb_poly}, ::Type{arb_poly}) = acb_poly
+promote_rule(::Type{acb_poly}, ::Type{arb_poly}) = acb_poly
 
 ################################################################################
 #
