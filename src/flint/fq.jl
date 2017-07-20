@@ -15,7 +15,7 @@ export FlintFiniteField, characteristic, order, fq, FqFiniteField, frobenius,
 
 parent_type(::Type{fq}) = FqFiniteField
 
-elem_type(::FqFiniteField) = fq
+elem_type(::Type{FqFiniteField}) = fq
 
 doc"""
     base_ring(a::FqFiniteField)
@@ -356,7 +356,7 @@ function divexact(x::fq, y::fq)
 end
 
 function divides(a::fq, b::fq)
-   b == 0 && error("Division by zero in divides")
+   iszero(b) && error("Division by zero in divides")
    return true, divexact(a, b)
 end
 

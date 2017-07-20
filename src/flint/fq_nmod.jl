@@ -14,7 +14,7 @@ export fq_nmod, FqNmodFiniteField
 
 parent_type(::Type{fq_nmod}) = FqNmodFiniteField
 
-elem_type(::FqNmodFiniteField) = fq_nmod
+elem_type(::Type{FqNmodFiniteField}) = fq_nmod
 
 base_ring(a::FqNmodFiniteField) = Union{}
 
@@ -317,7 +317,7 @@ function divexact(x::fq_nmod, y::fq_nmod)
 end
 
 function divides(a::fq_nmod, b::fq_nmod)
-   b == 0 && error("Division by zero in divides")
+   iszero(b) && error("Division by zero in divides")
    return true, divexact(a, b)
 end
 

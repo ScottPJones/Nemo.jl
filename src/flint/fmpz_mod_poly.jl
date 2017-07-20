@@ -18,9 +18,9 @@ base_ring(R::FmpzModPolyRing) = R.base_ring
 
 base_ring(a::fmpz_mod_poly) = base_ring(parent(a))
 
-elem_type(::fmpz_mod_poly) = fmpz_mod_poly
+elem_type(::Type{fmpz_mod_poly}) = fmpz_mod_poly
 
-elem_type(::FmpzModPolyRing) = fmpz_mod_poly
+elem_type(::Type{FmpzModPolyRing}) = fmpz_mod_poly
 
 parent_type(::Type{fmpz_mod_poly}) = FmpzModPolyRing
 
@@ -332,7 +332,7 @@ function ==(x::fmpz_mod_poly, y::GenRes{fmpz})
             (Ptr{fmpz}, Ptr{fmpz_mod_poly}, Int), &u, &x, 0)
      return u == y
   else
-    return y == 0
+    return iszero(y)
   end 
 end
 
@@ -491,7 +491,7 @@ mod(x::fmpz_mod_poly, y::fmpz_mod_poly) = rem(x, y)
 
 function divides(z::fmpz_mod_poly, x::fmpz_mod_poly)
    q, r = divrem(z, x)
-   return r == 0, q
+   return iszero(r), q
 end
 
 ################################################################################

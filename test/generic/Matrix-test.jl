@@ -308,6 +308,10 @@ function test_gen_mat_constructors()
    R, t = PolynomialRing(QQ, "t")
    S = MatrixSpace(R, 3, 3)
 
+   @test elem_type(S) == GenMat{elem_type(R)}
+   @test elem_type(GenMatSpace{elem_type(R)}) == GenMat{elem_type(R)}
+   @test parent_type(GenMat{elem_type(R)}) == GenMatSpace{elem_type(R)}
+
    @test typeof(S) <: GenMatSpace
 
    f = S(t^2 + 1)
@@ -354,8 +358,16 @@ function test_gen_mat_manipulation()
    @test isone(one(S))
 
    B[1, 1] = R(3)
-
    @test B[1, 1] == R(3)
+
+   B[1, 1] = 4
+   @test B[1, 1] == R(4)
+
+   B[1, 1] = BigInt(5)
+   @test B[1, 1] == R(5)
+
+   B[1, 1] = fmpz(5)
+   @test B[1, 1] == R(5)
 
    @test rows(B) == 3
    @test cols(B) == 3

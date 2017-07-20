@@ -18,7 +18,7 @@ export nmod_mat, NmodMatSpace, getindex, setindex!, set_entry!, deepcopy, rows,
 
 parent_type(::Type{nmod_mat}) = NmodMatSpace
 
-elem_type(::NmodMatSpace) = nmod_mat
+elem_type(::Type{NmodMatSpace}) = nmod_mat
 
 function _checkbounds(I::Int, J::Int)
    J >= 1 && J <= I
@@ -483,6 +483,11 @@ end
 function lufact!(P::perm, x::nmod_mat)
   rank = ccall((:nmod_mat_lu, :libflint), Cint, (Ptr{Int}, Ptr{nmod_mat}, Cint),
            P.d, &x, 0)
+
+  for i in 1:length(P.d)
+    P.d[i] += 1
+  end
+
   return rank
 end
 
@@ -593,7 +598,8 @@ doc"""
 > entries of the returned matrix are those of $a$ lifted to $\mathbb{Z}$.
 """
 function lift(a::nmod_mat)
-  z = MatrixSpace(FlintZZ, rows(a), cols(a))()
+  z = fmpz_mat(rows(a), cols(a))
+  z.base_ring = FlintIntegerRing()
   ccall((:fmpz_mat_set_nmod_mat, :libflint), Void,
           (Ptr{fmpz_mat}, Ptr{nmod_mat}), &z, &a)
   return z 
@@ -743,7 +749,7 @@ end
 
 function (a::NmodMatSpace)(arr::Array{GenRes{fmpz}, 2}, transpose::Bool = false)
   _check_dim(a.rows, a.cols, arr, transpose)
-  (base_ring(a) != parent(arr[1])) && error("Elements must have same base ring")
+  (length(arr) > 0 && (base_ring(a) != parent(arr[1]))) && error("Elements must have same base ring")
   z = nmod_mat(a.rows, a.cols, a.n, arr, transpose)
   z.base_ring = a.base_ring
   return z
@@ -751,7 +757,7 @@ end
 
 function (a::NmodMatSpace)(arr::Array{GenRes{fmpz}, 1}, transpose::Bool = false)
   _check_dim(a.rows, a.cols, arr)
-  (base_ring(a) != parent(arr[1])) && error("Elements must have same base ring")
+  (length(arr) > 0 && (base_ring(a) != parent(arr[1]))) && error("Elements must have same base ring")
   z = nmod_mat(a.rows, a.cols, a.n, arr, transpose)
   z.base_ring = a.base_ring
   return z

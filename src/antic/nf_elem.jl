@@ -21,7 +21,7 @@ doc"""
 """
 parent(a::nf_elem) = a.parent
 
-elem_type(::AnticNumberField) = nf_elem
+elem_type(::Type{AnticNumberField}) = nf_elem
 
 doc"""
     base_ring(a::AnticNumberField)
@@ -178,14 +178,14 @@ function elem_from_mat_row(a::AnticNumberField, b::fmpz_mat, i::Int, d::fmpz)
    cols(b) == degree(a) || error("Wrong number of columns")
    z = a()
    ccall((:nf_elem_set_fmpz_mat_row, :libflint), Void,
-        (Ptr{nf_elem}, Ptr{fmpz_mat}, Cint, Ptr{fmpz}, Ptr{AnticNumberField}),
+        (Ptr{nf_elem}, Ptr{fmpz_mat}, Int, Ptr{fmpz}, Ptr{AnticNumberField}),
         &z, &b, i - 1, &d, &a)
    return z
 end
 
 function elem_to_mat_row!(a::fmpz_mat, i::Int, d::fmpz, b::nf_elem)
    ccall((:nf_elem_get_fmpz_mat_row, :libflint), Void,
-         (Ptr{fmpz_mat}, Cint, Ptr{fmpz}, Ptr{nf_elem}, Ptr{AnticNumberField}),
+         (Ptr{fmpz_mat}, Int, Ptr{fmpz}, Ptr{nf_elem}, Ptr{AnticNumberField}),
          &a, i - 1, &d, &b, &b.parent)
    nothing
  end
@@ -530,7 +530,7 @@ function divexact(a::nf_elem, b::Int)
 end
 
 function divexact(a::nf_elem, b::fmpz)
-   b == 0 && throw(DivideError())
+   iszero(b) && throw(DivideError())
    r = a.parent()
    ccall((:nf_elem_scalar_div_fmpz, :libflint), Void,
          (Ptr{nf_elem}, Ptr{nf_elem}, Ptr{fmpz}, Ptr{AnticNumberField}),
@@ -541,7 +541,7 @@ end
 divexact(a::nf_elem, b::Integer) = divexact(a, fmpz(b))
 
 function divexact(a::nf_elem, b::fmpq)
-   b == 0 && throw(DivideError())
+   iszero(b) && throw(DivideError())
    r = a.parent()
    ccall((:nf_elem_scalar_div_fmpq, :libflint), Void,
          (Ptr{nf_elem}, Ptr{nf_elem}, Ptr{fmpq}, Ptr{AnticNumberField}),
@@ -568,7 +568,7 @@ doc"""
 > if such exists. If not, the value of $h$ is undetermined.
 """
 function divides(a::nf_elem, b::nf_elem)
-   b == 0 && throw(DivideError())
+  iszero(b) && throw(DivideError())
    return true, divexact(a, b)
 end
 

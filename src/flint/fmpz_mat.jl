@@ -6,8 +6,8 @@
 
 export fmpz_mat, FmpzMatSpace, getindex, getindex!, setindex!, rows, cols,
        charpoly, det, det_divisor, det_given_divisor, gram, hadamard,
-       ishadamard, hnf, ishnf, hnf_with_transform, hnf_modular, lll, lll_gram,
-       lll_with_transform, lll_gram_with_transform, lll_with_removal,
+       ishadamard, hnf, ishnf, hnf_with_transform, hnf_modular, lll, lll_ctx,
+       lll_gram, lll_with_transform, lll_gram_with_transform, lll_with_removal,
        lll_with_removal_transform, nullspace, rank, rref, reduce_mod, similar,
        snf, snf_diagonal, issnf, solve, solve_rational, cansolve,
        cansolve_with_nullspace, solve_dixon, trace, transpose, content, hcat,
@@ -20,13 +20,13 @@ export fmpz_mat, FmpzMatSpace, getindex, getindex!, setindex!, rows, cols,
 #
 ###############################################################################
 
-elem_type(::FmpzMatSpace) = fmpz_mat
+elem_type(::Type{FmpzMatSpace}) = fmpz_mat
 
 parent_type(::Type{fmpz_mat}) = FmpzMatSpace
 
 base_ring(a::FmpzMatSpace) = a.base_ring
 
-parent(a::fmpz_mat, cached::Bool = true) = 
+parent(a::fmpz_mat, cached::Bool = true) =
     FmpzMatSpace(rows(a), cols(a), cached)
 
 function check_parent(a::fmpz_mat, b::fmpz_mat)
@@ -733,7 +733,7 @@ doc"""
 """
 function lll(x::fmpz_mat, ctx::lll_ctx = lll_ctx(0.99, 0.51))
    z = deepcopy(x)
-   if rows(z) == 0 
+   if rows(z) == 0
      return z
    end
    u = similar(x, rows(x), rows(x))
@@ -1200,13 +1200,33 @@ end
 
 ###############################################################################
 #
-#   Promotions
+#   Conversions and promotions
 #
 ###############################################################################
 
 promote_rule{T <: Integer}(::Type{fmpz_mat}, ::Type{T}) = fmpz_mat
 
 promote_rule(::Type{fmpz_mat}, ::Type{fmpz}) = fmpz_mat
+
+function convert(::Type{Matrix{Int}}, A::fmpz_mat)
+    m, n = size(A)
+
+    fittable = [fits(Int, A[i, j]) for i in 1:m, j in 1:n]
+    if ! all(fittable)
+        warn("When trying to convert a fmpz_mat to a Matrix{Int}, some elements were too large to fit the standard Int type: try to convert to a matrix of BigInt.")
+        throw(InexactError())
+    end
+
+    mat::Matrix{Int} = Int[A[i,j] for i in 1:m, j in 1:n]
+    return mat
+end
+
+function convert(::Type{Matrix{BigInt}}, A::fmpz_mat)
+    m, n = size(A)
+    # No check: always ensured to fit a BigInt.
+    mat::Matrix{BigInt} = BigInt[A[i,j] for i in 1:m, j in 1:n]
+    return mat
+end
 
 ###############################################################################
 #
