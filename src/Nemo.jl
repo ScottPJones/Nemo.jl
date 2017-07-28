@@ -8,7 +8,7 @@ import Base: Array, abs, asin, asinh, atan, atanh, base, bin, checkbounds,
              gcd, gcdx, getindex, hash, hcat, hex, intersect, inv, invmod,
              isequal, isfinite, isless, isqrt, isreal, lcm, ldexp, length, log,
              lufact, lufact!, mod, ndigits, nextpow2, norm, nullspace, num,
-             oct, one, parent, parse, precision, prevpow2, rank,
+             oct, one, parent, parse, precision, prevpow2, rand, rank,
              Rational, rem, reverse, serialize, setindex!, show, similar, sign,
              sin, sinh, size, sqrt, string, tan, tanh, trace, trailing_zeros,
              transpose, transpose!, truncate, typed_hvcat, typed_hcat, var,
@@ -112,7 +112,7 @@ function __init__()
       (Ptr{Void},), cfunction(flint_abort, Void, ()))
 
    println("")
-   println("Welcome to Nemo version 0.6.0")
+   println("Welcome to Nemo version 0.6.3")
    println("")
    println("Nemo comes with absolutely no warranty whatsoever")
    println("")
@@ -133,7 +133,7 @@ end
 ################################################################################
 
 function versioninfo()
-  print("Nemo version 0.6.2 \n")
+  print("Nemo version 0.6.3 \n")
   nemorepo = dirname(dirname(@__FILE__))
 
   print("Nemo: ")

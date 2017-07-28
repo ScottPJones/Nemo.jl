@@ -62,7 +62,7 @@ parent(a::GenSparsePoly) = a.parent
 
 function deepcopy{T <: RingElem}(a::GenSparsePoly{T})
    Re = deepcopy(a.exps)
-   Rc = Array(T, a.length)
+   Rc = Array{T}(a.length)
    for i = 1:a.length
       Rc[i] = deepcopy(a.coeffs[i])
    end
@@ -314,17 +314,17 @@ function mul_johnson{T <: RingElem}(a::GenSparsePoly{T}, b::GenSparsePoly{T})
    if m == 0 || n == 0
       return par()
    end
-   H = Array(heap_sr, 0)
-   I = Array(heap_t, 0)
+   H = Array{heap_sr}(0)
+   I = Array{heap_t}(0)
    # set up heap
    push!(H, heap_sr(a.exps[1] + b.exps[1], 1))
    push!(I, heap_t(1, 1, 0))
    r_alloc = max(m, n) + n
-   Rc = Array(T, r_alloc)
-   Re = Array(UInt, r_alloc)
+   Rc = Array{T}(r_alloc)
+   Re = Array{UInt}(r_alloc)
    k = 0
    c = R()
-   Q = Array(Int, 0)
+   Q = Array{Int}(0)
    while !isempty(H)
       exp = H[1].exp
       k += 1
@@ -412,17 +412,17 @@ function divrem{T <: RingElem}(a::GenSparsePoly{T}, b::GenSparsePoly{T})
    if a.exps[m] < b.exps[n]
       return par(), a
    end
-   H = Array(heap_sr, 0)
-   I = Array(heap_t, 0)
+   H = Array{heap_sr}(0)
+   I = Array{heap_t}(0)
    # set up heap
    push!(H, heap_sr(maxn - a.exps[m], 1))
    push!(I, heap_t(0, 1, 0))
    q_alloc = max(m - n, n)
    r_alloc = n
-   Qc = Array(T, q_alloc)
-   Qe = Array(UInt, q_alloc)
-   Rc = Array(T, r_alloc)
-   Re = Array(UInt, r_alloc)
+   Qc = Array{T}(q_alloc)
+   Qe = Array{UInt}(q_alloc)
+   Rc = Array{T}(r_alloc)
+   Re = Array{UInt}(r_alloc)
    k = 0
    l = 0
    s = n
@@ -430,8 +430,8 @@ function divrem{T <: RingElem}(a::GenSparsePoly{T}, b::GenSparsePoly{T})
    qc = R()
    m1 = -R(1)
    mb = -b.coeffs[n]
-   Q = Array(Int, 0)
-   reuse = Array(Int, 0)
+   Q = Array{Int}(0)
+   reuse = Array{Int}(0)
    while !isempty(H)
       exp = H[1].exp
       k += 1
@@ -674,17 +674,17 @@ function pow_fps{T <: RingElem}(f::GenSparsePoly{T}, k::Int)
    par = parent(f)
    R = base_ring(par)
    m = length(f)
-   H = Array(heap_sr, 0) # heap
-   I = Array(heap_t, 0) # auxilliary data for heap nodes
+   H = Array{heap_sr}(0) # heap
+   I = Array{heap_t}(0) # auxilliary data for heap nodes
    # set up output poly coeffs and exponents (corresponds to h in paper)
    r_alloc = k*(m - 1) + 1
-   Rc = Array(T, r_alloc)
-   Re = Array(UInt, r_alloc)
+   Rc = Array{T}(r_alloc)
+   Re = Array{UInt}(r_alloc)
    rnext = 1
    # set up g coeffs and exponents (corresponds to g in paper)
    g_alloc = k*(m - 1) + 1
-   gc = Array(T, g_alloc)
-   ge = Array(UInt, g_alloc)
+   gc = Array{T}(g_alloc)
+   ge = Array{UInt}(g_alloc)
    gnext = 1
    # set up heap
    gc[1] = f.coeffs[1]^(k-1)
@@ -693,18 +693,18 @@ function pow_fps{T <: RingElem}(f::GenSparsePoly{T}, k::Int)
    Re[1] = f.exps[1]*k
    push!(H, heap_sr(f.exps[2] + ge[1], 1))
    push!(I, heap_t(2, 1, 0))
-   Q = Array(Int, 0) # corresponds to Q in paper
+   Q = Array{Int}(0) # corresponds to Q in paper
    topbit = -1 << (sizeof(Int)*8 - 1)
    mask = ~topbit
    largest = fill(topbit, m) # largest j s.t. (i, j) has been in heap
    largest[2] = 1
    # precompute some values
-   fik = Array(T, m)
+   fik = Array{T}(m)
    for i = 1:m
       fik[i] = from_exp(R, f.exps[i])*(k - 1)
    end
    kp1f1 = k*from_exp(R, f.exps[1])
-   gi = Array(T, 1)
+   gi = Array{T}(1)
    gi[1] = -from_exp(R, ge[1])
    finalexp = f.exps[m]*(k - 1) + f.exps[1]
    # temporary space
@@ -846,22 +846,22 @@ function divides_monagan_pearce{T <: RingElem}(a::GenSparsePoly{T}, b::GenSparse
    if m == 0
       return true, par()
    end
-   H = Array(heap_sr, 0)
-   I = Array(heap_t, 0)
+   H = Array{heap_sr}(0)
+   I = Array{heap_t}(0)
    # set up heap
    push!(H, heap_sr(a.exps[1], 1))
    push!(I, heap_t(0, 1, 0))
    q_alloc = max(m - n, n)
-   Qc = Array(T, q_alloc)
-   Qe = Array(UInt, q_alloc)
+   Qc = Array{T}(q_alloc)
+   Qe = Array{UInt}(q_alloc)
    k = 0
    s = n
    c = R()
    qc = R()
    m1 = -R(1)
    mb = -b.coeffs[1]
-   Q = Array(Int, 0)
-   reuse = Array(Int, 0)
+   Q = Array{Int}(0)
+   reuse = Array{Int}(0)
    while !isempty(H)
       exp = H[1].exp
       k += 1
@@ -949,8 +949,8 @@ function divides{T <: RingElem}(a::GenSparsePoly{T}, b::GenSparsePoly{T})
    d1 = a.exps[a.length]
    d2 = b.exps[b.length] - b.exps[1]
    q_alloc = b.length
-   Qe = Array(UInt, q_alloc)
-   Qc = Array(T, q_alloc)
+   Qe = Array{UInt}(q_alloc)
+   Qc = Array{T}(q_alloc)
    r = a
    k = 0
    while length(r) > 0
@@ -996,7 +996,7 @@ end
 
 function divides{T <: RingElem}(a::GenSparsePoly{T}, b::T)
    len = a.length
-   Qc = Array(T, len)
+   Qc = Array{T}(len)
    for i = 1:len
       flag, Qc[i] = divides(a.coeffs[i], b)
       if !flag
@@ -1029,20 +1029,20 @@ function pseudodivrem{T <: RingElem}(a::GenSparsePoly{T}, b::GenSparsePoly{T})
    if a.exps[m] < b.exps[n]
       return par(), a
    end
-   H = Array(heap_sr, 0)
-   I = Array(heap_t, 0)
+   H = Array{heap_sr}(0)
+   I = Array{heap_t}(0)
    # set up heap
    push!(H, heap_sr(maxn - a.exps[m], 1))
    push!(I, heap_t(0, 1, 0))
    q_alloc = max(m - n + 1, n)
    r_alloc = n
    p_alloc = max(m - n + 1, 1)
-   Qc = Array(T, q_alloc)
-   Qe = Array(UInt, q_alloc)
-   Qpow = Array(Int, q_alloc)
-   Rc = Array(T, r_alloc)
-   Re = Array(UInt, r_alloc)
-   Pc = Array(T, p_alloc)
+   Qc = Array{T}(q_alloc)
+   Qe = Array{UInt}(q_alloc)
+   Qpow = Array{Int}(q_alloc)
+   Rc = Array{T}(r_alloc)
+   Re = Array{UInt}(r_alloc)
+   Pc = Array{T}(p_alloc)
    Pc[1] = b.coeffs[n]
    p = -1 # current power of lead(b)
    p_max = 1
@@ -1052,8 +1052,8 @@ function pseudodivrem{T <: RingElem}(a::GenSparsePoly{T}, b::GenSparsePoly{T})
    c = R()
    m1 = -R(1)
    mb = -b.coeffs[n]
-   Q = Array(Int, 0)
-   reuse = Array(Int, 0)
+   Q = Array{Int}(0)
+   reuse = Array{Int}(0)
    while !isempty(H)
       exp = H[1].exp
       qc = R()
@@ -1205,20 +1205,20 @@ function pseudorem_monagan_pearce{T <: RingElem}(a::GenSparsePoly{T}, b::GenSpar
    if a.exps[m] < b.exps[n]
       return a
    end
-   H = Array(heap_sr, 0)
-   I = Array(heap_t, 0)
+   H = Array{heap_sr}(0)
+   I = Array{heap_t}(0)
    # set up heap
    push!(H, heap_sr(maxn - a.exps[m], 1))
    push!(I, heap_t(0, 1, 0))
    q_alloc = max(m - n + 1, n)
    r_alloc = n
    p_alloc = max(m - n + 1, 1)
-   Qc = Array(T, q_alloc)
-   Qe = Array(UInt, q_alloc)
-   Qpow = Array(Int, q_alloc)
-   Rc = Array(T, r_alloc)
-   Re = Array(UInt, r_alloc)
-   Pc = Array(T, p_alloc)
+   Qc = Array{T}(q_alloc)
+   Qe = Array{UInt}(q_alloc)
+   Qpow = Array{Int}(q_alloc)
+   Rc = Array{T}(r_alloc)
+   Re = Array{UInt}(r_alloc)
+   Pc = Array{T}(p_alloc)
    Pc[1] = b.coeffs[n]
    p = -1 # current power of lead(b)
    p_max = 1
@@ -1228,8 +1228,8 @@ function pseudorem_monagan_pearce{T <: RingElem}(a::GenSparsePoly{T}, b::GenSpar
    c = R()
    m1 = -R(1)
    mb = -b.coeffs[n]
-   Q = Array(Int, 0)
-   reuse = Array(Int, 0)
+   Q = Array{Int}(0)
+   reuse = Array{Int}(0)
    while !isempty(H)
       exp = H[1].exp
       qc = R()
@@ -1388,24 +1388,30 @@ end
 
 function evaluate{S <: RingElem, T <: RingElem}(a::GenSparsePoly{T}, b::S)
    if a.length == 0
-      return a
+      return base_ring(a)()
    end
    r = a.coeffs[a.length]
    for i = 1:a.length - 1
       r *= b^(reinterpret(Int, a.exps[a.length - i + 1] - a.exps[a.length - i]))
       r += a.coeffs[a.length - i]
    end
+   if a.exps[1] != 0
+      r *= b^(reinterpret(Int, a.exps[1]))
+   end
    return r
 end
 
 function evaluate{T <: RingElem}(a::GenSparsePoly{T}, b::Integer)
    if a.length == 0
-      return a
+      return base_ring(a)()
    end
    r = a.coeffs[a.length]
    for i = 1:a.length - 1
       r *= fmpz(b)^(reinterpret(Int, a.exps[a.length - i + 1] - a.exps[a.length - i]))
       r += a.coeffs[a.length - i]
+   end
+   if a.exps[1] != 0
+      r *= fmpz(b)^(reinterpret(Int, a.exps[1]))
    end
    return r
 end
@@ -1415,98 +1421,6 @@ end
 #   GCD, content and primitive part
 #
 ###############################################################################
-
-# Evaluate the coefficients of the polynomials at random points and try to work
-# out the likely degree of the gcd of the two input polys
-function gcd_likely_degree{T <: RingElem}(a::GenSparsePoly{GenMPoly{T}}, b::GenSparsePoly{GenMPoly{T}})
-   N = base_ring(a).N
-   if a.length == 0
-      if b.length == 0
-         return 0
-      else
-         return reinterpret(Int, b.exps[b.length])
-      end
-   elseif b.length == 0
-      return reinterpret(Int, a.exps[a.length])
-   end
-   # check we are not in the univariate case, to prevent infinite recursion
-   constant_coeffs = true
-   for i = 1:a.length
-      if !isconstant(a.coeffs[i])
-         constant_coeffs = false
-         break
-      end
-   end
-   if constant_coeffs
-      return 0
-   end   
-   # try to find two evaluations of a and b with the same gcd
-   num_good = 0
-   iter = 0
-   len = 0
-   V = base_ring(a)
-   R = base_ring(base_ring(a))
-   U = elem_type(R)
-   M = Array(Array{U, 1}, 0)
-   while num_good < 2 && iter < 10
-      i = 1
-      A = Array(U, 0)
-      # find a new set of points to evaluate at
-      while i < 10
-         A = [R(rand(-10:10)) for i in 1:N]
-         newvals = true
-         for j = 1:length(M)
-            if A == M[j]
-               newvals = false
-               break
-            end
-         end
-         if newvals
-            break
-         end
-         i += 1
-      end
-      if i == 10
-         return 0 # unable to find distinct evaluation points
-      end
-      # check none of the coefficients became zero when evaluated
-      Ac = [V(evaluate(a.coeffs[i], A)) for i in 1:a.length]
-      Bc = [V(evaluate(b.coeffs[i], A)) for i in 1:b.length]
-      is_degen = false
-      for i = 1:a.length
-         if Ac[i] == 0
-            is_degen = true
-         end
-      end
-      for i = 1:b.length
-         if Bc[i] == 0
-            is_degen = true
-         end
-      end
-      # take gcd of evaluated polys, check if deg of evaluated gcd has gone up
-      if !is_degen
-         a1 = parent(a)(Ac, a.exps)
-         b1 = parent(b)(Bc, b.exps)
-         g = gcd(a1, b1, true)
-         glen = g.length == 0 ? 0 : reinterpret(Int, g.exps[g.length])
-         if glen > len
-            len = glen
-            num_good = 1
-            resize!(M, 0)
-            push!(M, A)
-         elseif glen == len && glen != 0
-            num_good += 1
-            push!(M, A)
-         end
-      end
-      iter += 1
-   end
-   if iter == 10
-      return 0 # too many iterations - shouldn't happen
-   else
-      return len # probably length of the multivariate gcd
-   end
-end
 
 function gcd{T <: RingElem}(a::GenSparsePoly{T}, b::GenSparsePoly{T}, ignore_content=false)
    # ensure degree in main variable of a is at least that of b
@@ -1561,8 +1475,8 @@ function gcd{T <: RingElem}(a::GenSparsePoly{T}, b::GenSparsePoly{T}, ignore_con
       h = gcd(f, g)
       # convert back to sparse polys
       nonzero = 0
-      Ac = Array(T, 0)
-      Ae = Array(UInt, 0)
+      Ac = Array{T}(0)
+      Ae = Array{UInt}(0)
       for i = 1:length(h)
          ci = coeff(h, i - 1)
          if ci != 0
@@ -1578,7 +1492,7 @@ function gcd{T <: RingElem}(a::GenSparsePoly{T}, b::GenSparsePoly{T}, ignore_con
       end
    end
    # compute likely degree of gcd
-   deg = 0 # gcd_likely_degree(a, b)
+   deg = 0
    # is the lead/trail term a monomial
    lead_monomial = lead(a).length == 1 || lead(b).length == 1
    trail_monomial = trail(a).length == 1 || trail(b).length == 1
