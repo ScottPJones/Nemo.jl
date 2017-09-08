@@ -6,15 +6,65 @@
 
 ###############################################################################
 #
+#   Integers / BigInt
+#
+###############################################################################
+
+mutable struct Integers{T <: Integer} <: Ring
+   function Integers{T}() where T <: Integer
+      if haskey(IntegersID, T)
+         z = IntegersID[T]::Integers{T}
+      else 
+         z = new{T}()
+         IntegersID[T] = z
+      end
+      return z
+   end
+end
+
+const IntegersID = Dict{DataType, Ring}()
+
+###############################################################################
+#
+#   Rationals / Rational
+#
+###############################################################################
+
+mutable struct Rationals{T <: Integer} <: Field
+   function Rationals{T}() where T <: Integer
+      if haskey(RationalsID, T)
+         z = RationalsID[T]::Rationals{T}
+      else 
+         z = new{T}()
+         RationalsID[T] = z
+      end
+      return z
+   end
+end
+
+const RationalsID = Dict{DataType, Ring}()
+
+###############################################################################
+#
+#   Unions of Nemo abstract types and Julia types
+#
+###############################################################################
+
+const RingElement = Union{RingElem, Integer, Rational}
+
+const FieldElement = Union{FieldElem, Rational}
+
+###############################################################################
+#
 #   GenPolyRing / GenPoly
 #
 ###############################################################################
 
-mutable struct GenPolyRing{T <: RingElem} <: PolyRing{T}
+mutable struct GenPolyRing{T <: RingElement} <: PolyRing{T}
    base_ring::Ring
    S::Symbol
 
-   function GenPolyRing{T}(R::Ring, s::Symbol, cached::Bool = true) where {T}
+   function GenPolyRing{T}(R::Ring, s::Symbol, cached::Bool = true) where T <: RingElement
       if haskey(GenPolyID, (R, s))
          return GenPolyID[R, s]::GenPolyRing{T}
       else 
@@ -29,16 +79,20 @@ end
 
 const GenPolyID = Dict{Tuple{Ring, Symbol}, Ring}()
 
-mutable struct GenPoly{T <: RingElem} <: PolyElem{T}
+mutable struct GenPoly{T <: RingElement} <: PolyElem{T}
    coeffs::Array{T, 1}
    length::Int
    parent::GenPolyRing{T}
 
-   GenPoly{T}() where {T} = new{T}(Array{T}(0), 0)
+   GenPoly{T}() where T <: RingElement = new{T}(Array{T}(0), 0)
    
-   GenPoly{T}(a::Array{T, 1}) where {T} = new{T}(a, length(a))
+   function GenPoly{T}(b::Array{T, 1}) where T <: RingElement
+      z = new{T}(b)
+      z.length = normalise(z, length(b))
+      return z
+   end
 
-   GenPoly{T}(a::T) where {T} = iszero(a) ? new{T}(Array{T}(0), 0) : new{T}([a], 1)
+   GenPoly{T}(a::T) where T <: RingElement = iszero(a) ? new{T}(Array{T}(0), 0) : new{T}([a], 1)
 end
 
 ###############################################################################
@@ -56,7 +110,7 @@ end
 # T is an Int which is the number of variables
 # (plus one if ordered by total degree)
 
-mutable struct GenMPolyRing{T <: RingElem} <: PolyRing{T}
+mutable struct GenMPolyRing{T <: RingElement} <: PolyRing{T}
    base_ring::Ring
    S::Array{Symbol, 1}
    ord::Symbol
@@ -64,7 +118,7 @@ mutable struct GenMPolyRing{T <: RingElem} <: PolyRing{T}
    N::Int
 
    function GenMPolyRing{T}(R::Ring, s::Array{Symbol, 1}, ord::Symbol, N::Int,
-                         cached::Bool = true) where {T}
+                         cached::Bool = true) where T <: RingElement
       if haskey(GenMPolyID, (R, s, ord, N))
          return GenMPolyID[R, s, ord, N]::GenMPolyRing{T}
       else 
@@ -79,20 +133,20 @@ end
 
 const GenMPolyID = Dict{Tuple{Ring, Array{Symbol, 1}, Symbol, Int}, Ring}()
 
-mutable struct GenMPoly{T <: RingElem} <: PolyElem{T}
+mutable struct GenMPoly{T <: RingElement} <: PolyElem{T}
    coeffs::Array{T, 1}
    exps::Array{UInt, 2}
    length::Int
    parent::GenMPolyRing{T}
 
-   function GenMPoly{T}(R::GenMPolyRing) where {T}
+   function GenMPoly{T}(R::GenMPolyRing) where T <: RingElement
       N = R.N
       return new{T}(Array{T}(0), Array{UInt}(N, 0), 0, R)
    end
    
-   GenMPoly{T}(R::GenMPolyRing, a::Array{T, 1}, b::Array{UInt, 2}) where {T} = new{T}(a, b, length(a), R)
+   GenMPoly{T}(R::GenMPolyRing, a::Array{T, 1}, b::Array{UInt, 2}) where T <: RingElement = new{T}(a, b, length(a), R)
 
-   function GenMPoly{T}(R::GenMPolyRing, a::T) where {T}
+   function GenMPoly{T}(R::GenMPolyRing, a::T) where T <: RingElement
       N = R.N
       return iszero(a) ? new{T}(Array{T}(0), Array{UInt}(N, 0), 0, R) : 
                                           new{T}([a], zeros(UInt, N, 1), 1, R)
@@ -105,12 +159,12 @@ end
 #
 ###############################################################################
 
-mutable struct GenSparsePolyRing{T <: RingElem} <: Ring
+mutable struct GenSparsePolyRing{T <: RingElement} <: Ring
    base_ring::Ring
    S::Symbol
    num_vars::Int
 
-   function GenSparsePolyRing{T}(R::Ring, s::Symbol, cached::Bool = true) where {T}
+   function GenSparsePolyRing{T}(R::Ring, s::Symbol, cached::Bool = true) where T <: RingElement
       if haskey(GenSparsePolyID, (R, s))
          return GenSparsePolyID[R, s]::GenSparsePolyRing{T}
       else 
@@ -125,17 +179,17 @@ end
 
 const GenSparsePolyID = Dict{Tuple{Ring, Symbol}, GenSparsePolyRing}()
 
-mutable struct GenSparsePoly{T <: RingElem} <: RingElem
+mutable struct GenSparsePoly{T <: RingElement} <: RingElem
    coeffs::Array{T, 1}
    exps::Array{UInt}
    length::Int
    parent::GenSparsePolyRing{T}
 
-   GenSparsePoly{T}() where {T} = new{T}(Array{T}(0), Array{UInt}(0), 0)
+   GenSparsePoly{T}() where T <: RingElement = new{T}(Array{T}(0), Array{UInt}(0), 0)
    
-   GenSparsePoly{T}(a::Array{T, 1}, b::Array{UInt, 1}) where {T} = new{T}(a, b, length(a))
+   GenSparsePoly{T}(a::Array{T, 1}, b::Array{UInt, 1}) where T <: RingElement = new{T}(a, b, length(a))
 
-   GenSparsePoly{T}(a::T) where {T} = iszero(a) ? new{T}(Array{T}(0), Array{UInt}(0), 0) : 
+   GenSparsePoly{T}(a::T) where T <: RingElement = iszero(a) ? new{T}(Array{T}(0), Array{UInt}(0), 0) : 
                                                new{T}([a], [UInt(0)], 1)
 end
 
@@ -145,11 +199,11 @@ end
 #
 ###############################################################################
 
-mutable struct GenResRing{T <: RingElem} <: ResRing{T}
+mutable struct GenResRing{T <: RingElement} <: ResRing{T}
    base_ring::Ring
    modulus::T
 
-   function GenResRing{T}(modulus::T, cached::Bool = true) where {T}
+   function GenResRing{T}(modulus::T, cached::Bool = true) where T <: RingElement
       if haskey(ModulusDict, (parent(modulus), modulus))
          return ModulusDict[parent(modulus), modulus]::GenResRing{T}
       else
@@ -162,13 +216,13 @@ mutable struct GenResRing{T <: RingElem} <: ResRing{T}
    end
 end
 
-const ModulusDict = Dict{Tuple{Ring, RingElem}, Ring}()
+const ModulusDict = Dict{Tuple{Ring, RingElement}, Ring}()
 
-mutable struct GenRes{T <: RingElem} <: ResElem{T}
+mutable struct GenRes{T <: RingElement} <: ResElem{T}
    data::T
    parent::GenResRing{T}
 
-   GenRes{T}(a::T) where {T} = new{T}(a)
+   GenRes{T}(a::T) where T <: RingElement = new{T}(a)
 end
 
 ###############################################################################
@@ -177,12 +231,12 @@ end
 #
 ###############################################################################
 
-mutable struct GenRelSeriesRing{T <: RingElem} <: SeriesRing{T}
+mutable struct GenRelSeriesRing{T <: RingElement} <: SeriesRing{T}
    base_ring::Ring
    prec_max::Int
    S::Symbol
 
-   function GenRelSeriesRing{T}(R::Ring, prec::Int, s::Symbol, cached::Bool = true) where {T}
+   function GenRelSeriesRing{T}(R::Ring, prec::Int, s::Symbol, cached::Bool = true) where T <: RingElement
       if haskey(GenRelSeriesID, (R, prec, s))
          return GenRelSeriesID[R, prec, s]::GenRelSeriesRing{T}
       else
@@ -197,18 +251,18 @@ end
 
 const GenRelSeriesID = Dict{Tuple{Ring, Int, Symbol}, Ring}()
 
-mutable struct GenRelSeries{T <: RingElem} <: RelSeriesElem{T}
+mutable struct GenRelSeries{T <: RingElement} <: RelSeriesElem{T}
    coeffs::Array{T, 1}
    length::Int
    prec::Int
    val::Int
    parent::GenRelSeriesRing{T}
 
-   function GenRelSeries{T}(a::Array{T, 1}, length::Int, prec::Int, val::Int) where {T}
+   function GenRelSeries{T}(a::Array{T, 1}, length::Int, prec::Int, val::Int) where T <: RingElement
       new{T}(a, length, prec, val)
    end
 
-   GenRelSeries{T}(a::GenRelSeries{T}) where {T} = a
+   GenRelSeries{T}(a::GenRelSeries{T}) where T <: RingElement = a
 end
 
 ###############################################################################
@@ -217,12 +271,12 @@ end
 #
 ###############################################################################
 
-mutable struct GenAbsSeriesRing{T <: RingElem} <: SeriesRing{T}
+mutable struct GenAbsSeriesRing{T <: RingElement} <: SeriesRing{T}
    base_ring::Ring
    prec_max::Int
    S::Symbol
 
-   function GenAbsSeriesRing{T}(R::Ring, prec::Int, s::Symbol, cached::Bool = true) where {T}
+   function GenAbsSeriesRing{T}(R::Ring, prec::Int, s::Symbol, cached::Bool = true) where T <: RingElement
       if haskey(GenAbsSeriesID, (R, prec, s))
          return GenAbsSeriesID[R, prec, s]::GenAbsSeriesRing{T}
       else
@@ -237,14 +291,14 @@ end
 
 const GenAbsSeriesID = Dict{Tuple{Ring, Int, Symbol}, Ring}()
 
-mutable struct GenAbsSeries{T <: RingElem} <: AbsSeriesElem{T}
+mutable struct GenAbsSeries{T <: RingElement} <: AbsSeriesElem{T}
    coeffs::Array{T, 1}
    length::Int
    prec::Int
    parent::GenAbsSeriesRing{T}
 
-   GenAbsSeries{T}(a::Array{T, 1}, length::Int, prec::Int) where {T} = new{T}(a, length, prec)   
-   GenAbsSeries{T}(a::GenAbsSeries{T}) where {T} = a
+   GenAbsSeries{T}(a::Array{T, 1}, length::Int, prec::Int) where T <: RingElement = new{T}(a, length, prec)   
+   GenAbsSeries{T}(a::GenAbsSeries{T}) where T <: RingElement = a
 end
 
 ###############################################################################
@@ -256,7 +310,7 @@ end
 mutable struct GenFracField{T <: RingElem} <: FracField{T}
    base_ring::Ring
 
-   function GenFracField{T}(R::Ring, cached::Bool = true) where {T}
+   function GenFracField{T}(R::Ring, cached::Bool = true) where T <: RingElem
       if haskey(GenFracDict, R)
          return GenFracDict[R]::GenFracField{T}
       else
@@ -276,7 +330,7 @@ mutable struct GenFrac{T <: RingElem} <: FracElem{T}
    den::T
    parent::GenFracField{T}
 
-   GenFrac{T}(num::T, den::T) where {T} = new{T}(num, den) 
+   GenFrac{T}(num::T, den::T) where T <: RingElem = new{T}(num, den) 
 end
 
 ###############################################################################
@@ -286,12 +340,12 @@ end
 ###############################################################################
 
 # not really a mathematical ring
-mutable struct GenMatSpace{T <: RingElem} <: MatSpace{T}
+mutable struct GenMatSpace{T <: RingElement} <: MatSpace{T}
    rows::Int
    cols::Int
    base_ring::Ring
 
-   function GenMatSpace{T}(R::Ring, r::Int, c::Int, cached::Bool = true) where {T}
+   function GenMatSpace{T}(R::Ring, r::Int, c::Int, cached::Bool = true) where T <: RingElement
       if haskey(GenMatDict, (R, r, c))
          return GenMatDict[R, r, c]::GenMatSpace{T}
       else
@@ -306,10 +360,11 @@ end
 
 const GenMatDict = Dict{Tuple{Ring, Int, Int}, Ring}()
 
-mutable struct GenMat{T <: RingElem} <: MatElem{T}
+mutable struct GenMat{T <: RingElement} <: MatElem{T}
    entries::Array{T, 2}
    base_ring::Ring
 
-   GenMat{T}(a::Array{T, 2}) where {T} = new{T}(a) 
+   function GenMat{T}(A::Array{T, 2}) where T <: RingElement
+      return new{T}(A)
+   end
 end
-

@@ -424,6 +424,11 @@ function divexact(x::nmod_poly, y::GenRes{fmpz})
   return divexact(x, parent(x)(y))
 end
 
+function divexact(x::nmod_poly, y::fmpz)
+  iszero(y) && throw(DivideError())
+  return divexact(x, parent(x)(y))
+end
+
 div(x::nmod_poly, y::nmod_poly) = divexact(x,y)
 
 function divexact(x::nmod_poly, y::Int)
@@ -1002,6 +1007,11 @@ function (R::NmodPolyRing)(x::Integer)
   z = nmod_poly(R.n, x)
   z.parent = R
   return z
+end
+
+function (R::NmodPolyRing)(x::nmod_poly)
+   R != parent(x) && error("Wrong parents")
+   return x
 end
 
 function (R::NmodPolyRing)(x::GenRes{fmpz})

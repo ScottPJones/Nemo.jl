@@ -442,6 +442,15 @@ function divexact(x::fmpz_mod_poly, y::GenRes{fmpz})
   return q
 end
    
+function divexact(x::fmpz_mod_poly, y::fmpz)
+  y == 0 && throw(DivideError())
+  q = parent(x)()
+  ccall((:fmpz_mod_poly_scalar_div_fmpz, :libflint), Void, 
+          (Ptr{fmpz_mod_poly}, Ptr{fmpz_mod_poly}, Ptr{fmpz}), 
+               &q, &x, &y)
+  return q
+end
+   
 function divexact(x::fmpz_mod_poly, y::Int)
   y == 0 && throw(DivideError())
   q = parent(x)()

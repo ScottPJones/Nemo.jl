@@ -12,7 +12,7 @@ export FractionField, GenFrac, GenFracField, num, den
 #
 ###############################################################################
 
-parent_type(::Type{GenFrac{T}}) where {T} = GenFracField{T}
+parent_type(::Type{GenFrac{T}}) where T <: RingElem = GenFracField{T}
 
 elem_type(::Type{GenFracField{T}}) where {T <: RingElem} = GenFrac{T}
 
@@ -20,7 +20,7 @@ doc"""
     base_ring{T}(S::FracField{T})
 > Return the base ring $R$ of the given fraction field.
 """
-base_ring(a::FracField{T}) where {T} = a.base_ring::parent_type(T)
+base_ring(a::FracField{T}) where T <: RingElem = a.base_ring::parent_type(T)
 
 doc"""
     base_ring{T}(r::FracElem)
@@ -57,15 +57,16 @@ function //(x::T, y::T) where {T <: RingElem}
    return z
 end
 
-//(x::T, y::Integer) where {T <: RingElem} = x//parent(x)(y)
+//(x::T, y::Union{Integer, Rational}) where {T <: RingElem} = x//parent(x)(y)
                                           
-//(x::Integer, y::T) where {T <: RingElem} = parent(y)(x)//y
+//(x::Union{Integer, Rational}, y::T) where {T <: RingElem} = parent(y)(x)//y
 
-# disambiguation
-//(x::FracElem{T}, y::FracElem{T}) where {T <: RingElem} = divexact(x, y)
+//(x::T, y::fmpz) where {T <: RingElem} = x//parent(x)(y)
+                                          
+//(x::fmpz, y::T) where {T <: RingElem} = parent(y)(x)//y
 
 //(x::T, y::FracElem{T}) where {T <: RingElem} = parent(y)(x)//y
-                                              
+
 //(x::FracElem{T}, y::T) where {T <: RingElem} = x//parent(x)(y)
 
 ###############################################################################
@@ -239,10 +240,10 @@ end
 ###############################################################################
 
 doc"""
-    *(a::FracElem, b::Integer)
+    *(a::FracElem, b::Union{Integer, Rational})
 > Return $a\times b$.
 """
-function *(a::FracElem, b::Integer)
+function *(a::FracElem, b::Union{Integer, Rational})
    c = base_ring(a)(b)
    g = gcd(den(a), c)
    n = num(a)*divexact(c, g)
@@ -251,10 +252,10 @@ function *(a::FracElem, b::Integer)
 end
 
 doc"""
-    *(a::Integer, b::FracElem)
+    *(a::Union{Integer, Rational}, b::FracElem)
 > Return $a\times b$.
 """
-function *(a::Integer, b::FracElem)
+function *(a::Union{Integer, Rational}, b::FracElem)
    c = base_ring(b)(a)
    g = gcd(den(b), c)
    n = num(b)*divexact(c, g)
@@ -309,10 +310,10 @@ function *(a::T, b::FracElem{T}) where {T <: RingElem}
 end
 
 doc"""
-    +(a::FracElem, b::Integer)
+    +(a::FracElem, b::Union{Integer, Rational})
 > Return $a + b$.
 """
-function +(a::FracElem, b::Integer)
+function +(a::FracElem, b::Union{Integer, Rational})
    n = num(a) + den(a)*b
    d = den(a)
    g = gcd(n, d)
@@ -331,10 +332,10 @@ function +(a::FracElem, b::fmpz)
 end
 
 doc"""
-    -(a::FracElem, b::Integer)
+    -(a::FracElem, b::Union{Integer, Rational})
 > Return $a - b$.
 """
-function -(a::FracElem, b::Integer)
+function -(a::FracElem, b::Union{Integer, Rational})
    n = num(a) - den(a)*b
    d = den(a)
    g = gcd(n, d)
@@ -353,10 +354,10 @@ function -(a::FracElem, b::fmpz)
 end
 
 doc"""
-    +(a::Integer, b::FracElem)
+    +(a::Union{Integer, Rational}, b::FracElem)
 > Return $a + b$.
 """
-+(a::Integer, b::FracElem) = b + a
++(a::Union{Integer, Rational}, b::FracElem) = b + a
 
 doc"""
     +(a::fmpz, b::FracElem)
@@ -365,10 +366,10 @@ doc"""
 +(a::fmpz, b::FracElem) = b + a
 
 doc"""
-    -(a::Integer, b::FracElem)
+    -(a::Union{Integer, Rational}, b::FracElem)
 > Return $a - b$.
 """
-function -(a::Integer, b::FracElem)
+function -(a::Union{Integer, Rational}, b::FracElem)
    n = a*den(b) - num(b)
    d = den(b)
    g = gcd(n, d)
@@ -463,18 +464,18 @@ end
 ###############################################################################
 
 doc"""
-    ==(x::FracElem, y::Integer)
+    ==(x::FracElem, y::Union{Integer, Rational})
 > Return `true` if $x == y$ arithmetically, otherwise return `false`.
 """
-function ==(x::FracElem, y::Integer)
+function ==(x::FracElem, y::Union{Integer, Rational})
    return (isone(den(x)) && num(x) == y) || (num(x) == den(x)*y)
 end
 
 doc"""
-    ==(x::Integer, y::FracElem)
+    ==(x::Union{Integer, Rational}, y::FracElem)
 > Return `true` if $x == y$ arithmetically, otherwise return `false`.
 """
-==(x::Integer, y::FracElem) = y == x
+==(x::Union{Integer, Rational}, y::FracElem) = y == x
 
 doc"""
     ==(x::FracElem, y::fmpz)
@@ -545,10 +546,10 @@ end
 ###############################################################################
 
 doc"""
-    divexact(a::FracElem, b::Integer)
+    divexact(a::FracElem, b::Union{Integer, Rational})
 > Return $a/b$.
 """
-function divexact(a::FracElem, b::Integer)
+function divexact(a::FracElem, b::Union{Integer, Rational})
    b == 0 && throw(DivideError())
    c = base_ring(a)(b)
    g = gcd(num(a), c)
@@ -558,10 +559,10 @@ function divexact(a::FracElem, b::Integer)
 end
 
 doc"""
-    divexact(a::Integer, b::FracElem)
+    divexact(a::Union{Integer, Rational}, b::FracElem)
 > Return $a/b$.
 """
-function divexact(a::Integer, b::FracElem)
+function divexact(a::Union{Integer, Rational}, b::FracElem)
    iszero(b) && throw(DivideError())
    c = base_ring(b)(a)
    g = gcd(num(b), c)
@@ -595,12 +596,6 @@ function divexact(a::fmpz, b::FracElem)
    d = divexact(num(b), g)
    return parent(b)(n, d)
 end
-
-# remove ambiguity
-divexact(a::FracElem{T}, b::PolyElem{T}) where {T <: RingElem} = error("Not supported")
-
-# remove ambiguity
-divexact(a::PolyElem{T}, b::FracElem{T}) where {T <: RingElem} = error("Not supported")
 
 doc"""
     divexact{T <: RingElem}(a::FracElem{T}, b::T)
@@ -768,16 +763,10 @@ end
 #
 ###############################################################################
 
-promote_rule(::Type{GenFrac{T}}, ::Type{T}) where {T <: RingElem} = GenFrac{T}
-
-promote_rule(::Type{GenFrac{T}}, ::Type{U}) where {T <: RingElem, U <: Integer} = GenFrac{T}
-
-function promote_rule1(::Type{GenFrac{T}}, ::Type{GenFrac{U}}) where {T <: RingElem, U <: RingElem}
-   promote_rule(T, GenFrac{U}) == T ? GenFrac{T} : Union{}
-end
+promote_rule(::Type{GenFrac{T}}, ::Type{GenFrac{T}}) where T <: RingElement = GenFrac{T}
 
 function promote_rule(::Type{GenFrac{T}}, ::Type{U}) where {T <: RingElem, U <: RingElem}
-   promote_rule(T, U) == T ? GenFrac{T} : promote_rule1(U, GenFrac{T})
+   promote_rule(T, U) == T ? GenFrac{T} : Union{}
 end
 
 ###############################################################################
@@ -786,30 +775,30 @@ end
 #
 ###############################################################################
 
-function (a::GenFracField{T})(b::RingElem) where {T <: RingElem}
+function (a::GenFracField{T})(b::RingElement) where {T <: RingElement}
    return a(base_ring(a)(b))
 end
 
-function (a::GenFracField{T})() where {T <: RingElem}
+function (a::GenFracField{T})() where {T <: RingElement}
    z = GenFrac{T}(zero(base_ring(a)), one(base_ring(a)))
    z.parent = a
    return z
 end
 
-function (a::GenFracField{T})(b::fmpz) where {T <: RingElem}
+function (a::GenFracField{T})(b::fmpz) where {T <: RingElement}
    z = GenFrac{T}(base_ring(a)(b), one(base_ring(a)))
    z.parent = a
    return z
 end
 
-function (a::GenFracField{T})(b::T) where {T <: RingElem}
+function (a::GenFracField{T})(b::T) where {T <: RingElement}
    parent(b) != base_ring(a) && error("Could not coerce to fraction")
    z = GenFrac{T}(b, one(base_ring(a)))
    z.parent = a
    return z
 end
 
-function (a::GenFracField{T})(b::T, c::T) where {T <: RingElem}
+function (a::GenFracField{T})(b::T, c::T) where {T <: RingElement}
    parent(b) != base_ring(a) && error("Could not coerce to fraction")
    parent(c) != base_ring(a) && error("Could not coerce to fraction")
    z = GenFrac{T}(b, c)
@@ -817,33 +806,33 @@ function (a::GenFracField{T})(b::T, c::T) where {T <: RingElem}
    return z
 end
 
-function (a::GenFracField{T})(b::T, c::Integer) where {T <: RingElem}
+function (a::GenFracField{T})(b::T, c::Union{Integer, Rational}) where {T <: RingElement}
    parent(b) != base_ring(a) && error("Could not coerce to fraction")
    z = GenFrac{T}(b, base_ring(a)(c))
    z.parent = a
    return z
 end
 
-function (a::GenFracField{T})(b::Integer, c::T) where {T <: RingElem}
+function (a::GenFracField{T})(b::Union{Integer, Rational}, c::T) where {T <: RingElement}
    parent(c) != base_ring(a) && error("Could not coerce to fraction")
    z = GenFrac{T}(base_ring(a)(b), c)
    z.parent = a
    return z
 end
 
-function (a::GenFracField{T})(b::Integer) where {T <: RingElem}
+function (a::GenFracField{T})(b::Union{Integer, Rational}) where {T <: RingElement}
    z = GenFrac{T}(base_ring(a)(b), one(base_ring(a)))
    z.parent = a
    return z
 end
 
-function (a::GenFracField{T})(b::Integer, c::Integer) where {T <: RingElem}
+function (a::GenFracField{T})(b::Integer, c::Integer) where {T <: RingElement}
    z = GenFrac{T}(base_ring(a)(b), base_ring(a)(c))
    z.parent = a
    return z
 end
 
-function (a::GenFracField{T})(b::GenFrac{T}) where {T <: RingElem}
+function (a::GenFracField{T})(b::GenFrac{T}) where {T <: RingElement}
    a != parent(b) && error("Could not coerce to fraction")
    return b
 end

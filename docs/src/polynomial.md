@@ -197,7 +197,7 @@ setcoeff!{T <: RingElem}(a::PolyElem{T}, n::Int, c::T)
 Set the coefficient of the degree $n$ term of the given polynomial to the given
 value `a`. The polynomial is not normalised automatically after this operation,
 however the polynomial is automatically resized if there is not sufficient
-allocated space.
+allocated space. 
 
 ```
 deepcopy(a::PolyElem)

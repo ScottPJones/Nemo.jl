@@ -778,7 +778,7 @@ function (R::FqNmodPolyRing)(x::Array{fmpz, 1})
    return z
 end
 
-function (R::FqNmodPolyRing)(x::Array{T, 1} where {T <: Integer}) 
+function (R::FqNmodPolyRing)(x::Array{T, 1}) where {T <: Integer}
    length(x) == 0 && error("Array must be non-empty")
    return R(map(fmpz, x))
 end
